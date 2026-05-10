@@ -119,22 +119,62 @@ const detailsContent = document.getElementById('detailsContent');
 const checkoutForm = document.getElementById('checkoutForm');
 const checkoutBtn = document.getElementById('checkoutBtn');
 const trackingBox = document.getElementById('trackingBox');
-const authTitle = document.getElementById('authTitle');
-const authName = document.getElementById('authName');
 const navLinks = document.getElementById('navLinks');
 
-let cart = [];
+const authForm = document.getElementById('authForm');
+const authTitle = document.getElementById('authTitle');
+const authText = document.getElementById('authText');
+const authName = document.getElementById('authName');
+const authSubmit = document.getElementById('authSubmit');
+const loginTab = document.getElementById('loginTab');
+const signupTab = document.getElementById('signupTab');
+
+const userBox = document.getElementById('userBox');
+const userNameText = document.getElementById('userNameText');
+const accountBtn = document.getElementById('accountBtn');
+const accountName = document.getElementById('accountName');
+const accountEmail = document.getElementById('accountEmail');
+const accountContent = document.getElementById('accountContent');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let cart = JSON.parse(localStorage.getItem('bitego_cart') || '[]');
 let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+let currentOrders = JSON.parse(localStorage.getItem('bitego_current_orders') || '[]');
+let previousOrders = JSON.parse(localStorage.getItem('bitego_previous_orders') || '[]');
+let reservations = JSON.parse(localStorage.getItem('bitego_reservations') || '[]');
 let currentCategory = 'all';
+let currentUser = null;
+let isSignup = false;
 
 window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('hide');
-  }, 550);
+  const loader = document.getElementById('loader');
+
+  if (loader) {
+    setTimeout(() => loader.classList.add('hide'), 550);
+  }
 
   renderRestaurants(restaurants);
   renderRecommendations();
   updateCart();
+  setAuthMode('login');
+
+  if (window.firebaseObserver && window.firebaseAuth) {
+    window.firebaseObserver(window.firebaseAuth, user => {
+      if (user) {
+        currentUser = {
+          name: user.email.split('@')[0],
+          email: user.email
+        };
+      } else {
+        currentUser = null;
+      }
+
+      updateUserUI();
+    });
+  } else {
+    currentUser = JSON.parse(localStorage.getItem('bitego_user') || 'null');
+    updateUserUI();
+  }
 });
 
 function showToast(message) {
@@ -155,9 +195,7 @@ function closeModal(id) {
 }
 
 document.querySelectorAll('[data-close]').forEach(button => {
-  button.addEventListener('click', () => {
-    closeModal(button.dataset.close);
-  });
+  button.addEventListener('click', () => closeModal(button.dataset.close));
 });
 
 document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -203,7 +241,7 @@ function renderRestaurants(list) {
           <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(${restaurant.id})">❤</button>
         </div>
 
-        <button class="details-btn" style="width:100%; margin-top:10px" onclick="openDetails(${restaurant.id})">
+        <button class="details-btn" onclick="openDetails(${restaurant.id})">
           View restaurant page
         </button>
       </div>
@@ -359,6 +397,9 @@ function updateCart() {
 
     cartItems.appendChild(row);
   });
+
+  localStorage.setItem('bitego_cart', JSON.stringify(cart));
+  saveCurrentOrderToAccount();
 }
 
 function changeQty(index, amount) {
@@ -465,13 +506,8 @@ function renderRecommendations() {
     .join('');
 }
 
-document.getElementById('cartBtn').onclick = () => {
-  openModal('cartModal');
-};
-
-document.getElementById('bottomCartBtn').onclick = () => {
-  openModal('cartModal');
-};
+document.getElementById('cartBtn').onclick = () => openModal('cartModal');
+document.getElementById('bottomCartBtn').onclick = () => openModal('cartModal');
 
 checkoutBtn.addEventListener('click', () => {
   if (!cart.length) {
@@ -488,23 +524,29 @@ checkoutForm.addEventListener('submit', event => {
   checkoutForm.classList.remove('active');
   trackingBox.classList.add('active');
 
+  previousOrders = [...previousOrders, ...cart];
+  localStorage.setItem('bitego_previous_orders', JSON.stringify(previousOrders));
+
+  cart = [];
+  updateCart();
+
   showToast('✅ Order placed successfully');
 
-  setTimeout(() => {
-    document.getElementById('step2').classList.add('active');
-  }, 900);
-
-  setTimeout(() => {
-    document.getElementById('step3').classList.add('active');
-  }, 1800);
-
-  setTimeout(() => {
-    document.getElementById('step4').classList.add('active');
-  }, 2800);
+  setTimeout(() => document.getElementById('step2').classList.add('active'), 900);
+  setTimeout(() => document.getElementById('step3').classList.add('active'), 1800);
+  setTimeout(() => document.getElementById('step4').classList.add('active'), 2800);
 });
 
 bookingForm.addEventListener('submit', event => {
   event.preventDefault();
+
+  reservations.push({
+    restaurant: bookingTitle.textContent.replace('Book a table at ', ''),
+    date: 'Selected date',
+    time: 'Selected time'
+  });
+
+  localStorage.setItem('bitego_reservations', JSON.stringify(reservations));
 
   bookingForm.reset();
   closeModal('bookingModal');
@@ -512,139 +554,30 @@ bookingForm.addEventListener('submit', event => {
   showToast('✅ Reservation confirmed');
 });
 
-function openAuth(type) {
-  authTitle.textContent = type === 'signup' ? 'Create account' : 'Login';
-  authName.style.display = type === 'signup' ? 'block' : 'none';
-
-  openModal('authModal');
-}
-
-document.getElementById('loginBtn').onclick = () => {
-  openAuth('login');
-};
-
-document.getElementById('signupBtn').onclick = () => {
-  openAuth('signup');
-};
-
-document.getElementById('authForm').addEventListener('submit', event => {
-  event.preventDefault();
-
-  closeModal('authModal');
-  showToast('✅ Welcome to BiteGo');
-});
-
-function toggleTheme() {
-  document.body.classList.toggle('dark');
-
-  if (document.body.classList.contains('dark')) {
-    showToast('🌙 Dark mode on');
-  } else {
-    showToast('☀️ Light mode on');
-  }
-}
-
-document.getElementById('themeBtn').onclick = toggleTheme;
-document.getElementById('bottomThemeBtn').onclick = toggleTheme;
-
-document.getElementById('mobileMenu').addEventListener('click', () => {
-  navLinks.classList.toggle('active');
-});
-/* NEW UPDATES */
-
-localStorage.setItem('bitego_loaded', 'true');
-
-function fakeNotification() {
-  const notifications = [
-    '🔥 New order from Bella Napoli',
-    '🍔 Urban Burger has a new discount',
-    '🍣 Sushi Zen tables are almost full',
-    '🥙 New Arabic meals added',
-    '🚀 20% OFF delivery today'
-  ];
-
-  const random =
-    notifications[Math.floor(Math.random() * notifications.length)];
-
-  showToast(random);
-}
-
-setInterval(fakeNotification, 15000);
-
-window.addEventListener('scroll', () => {
-  const navbar = document.querySelector('.navbar');
-
-  if (window.scrollY > 40) {
-    navbar.style.padding = '12px 7%';
-  } else {
-    navbar.style.padding = '15px 7%';
-  }
-});
-
-function saveCart() {
-  localStorage.setItem('bitego_cart', JSON.stringify(cart));
-}
-
-function loadCart() {
-  const saved = localStorage.getItem('bitego_cart');
-
-  if (saved) {
-    cart = JSON.parse(saved);
-    updateCart();
-  }
-}
-
-loadCart();
-
-const oldUpdateCart = updateCart;
-
-updateCart = function () {
-  oldUpdateCart();
-  saveCart();
-};
-
-document.addEventListener('mousemove', e => {
-  const hero = document.querySelector('.hero-visual');
-
-  if (!hero) return;
-
-  const x = (window.innerWidth / 2 - e.pageX) / 60;
-  const y = (window.innerHeight / 2 - e.pageY) / 60;
-
-  hero.style.transform =
-    `rotateY(${x}deg) rotateX(${y}deg)`;
-});
-/* FIX BUTTONS */
-
 function setAuthMode(mode) {
-  const loginTabEl = document.getElementById('loginTab');
-  const signupTabEl = document.getElementById('signupTab');
-  const authTitleEl = document.getElementById('authTitle');
-  const authTextEl = document.getElementById('authText');
-  const authNameEl = document.getElementById('authName');
-  const authSubmitEl = document.getElementById('authSubmit');
+  isSignup = mode === 'signup';
 
-  if (mode === 'signup') {
-    loginTabEl.classList.remove('active');
-    signupTabEl.classList.add('active');
+  if (isSignup) {
+    loginTab.classList.remove('active');
+    signupTab.classList.add('active');
 
-    authTitleEl.textContent = 'Create account';
-    authTextEl.textContent = 'Sign up and start ordering from your favorite restaurants.';
-    authNameEl.style.display = 'block';
-    authSubmitEl.textContent = 'Create account';
+    authTitle.textContent = 'Create account';
+    authText.textContent = 'Sign up and start ordering from your favorite restaurants.';
+    authName.style.display = 'block';
+    authSubmit.textContent = 'Create account';
   } else {
-    signupTabEl.classList.remove('active');
-    loginTabEl.classList.add('active');
+    signupTab.classList.remove('active');
+    loginTab.classList.add('active');
 
-    authTitleEl.textContent = 'Welcome back';
-    authTextEl.textContent = 'Login to continue ordering your favorite meals.';
-    authNameEl.style.display = 'none';
-    authSubmitEl.textContent = 'Login';
+    authTitle.textContent = 'Welcome back';
+    authText.textContent = 'Login to continue ordering your favorite meals.';
+    authName.style.display = 'none';
+    authSubmit.textContent = 'Login';
   }
 }
 
-document.getElementById('cartBtn').onclick = () => openModal('cartModal');
-document.getElementById('bottomCartBtn').onclick = () => openModal('cartModal');
+loginTab.onclick = () => setAuthMode('login');
+signupTab.onclick = () => setAuthMode('signup');
 
 document.getElementById('loginBtn').onclick = () => {
   openModal('authModal');
@@ -656,27 +589,42 @@ document.getElementById('signupBtn').onclick = () => {
   setAuthMode('signup');
 };
 
-document.getElementById('loginTab').onclick = () => setAuthMode('login');
-document.getElementById('signupTab').onclick = () => setAuthMode('signup');
+authForm.addEventListener('submit', async event => {
+  event.preventDefault();
 
-document.getElementById('themeBtn').onclick = toggleTheme;
-document.getElementById('bottomThemeBtn').onclick = toggleTheme;
+  const email = authForm.querySelector('input[type="email"]').value.trim();
+  const password = authForm.querySelector('input[type="password"]').value.trim();
 
-setAuthMode('login');
-/* ACCOUNT SYSTEM */
+  if (!email || !password) {
+    showToast('❌ Please enter email and password');
+    return;
+  }
 
-const userBox = document.getElementById('userBox');
-const userNameText = document.getElementById('userNameText');
-const accountBtn = document.getElementById('accountBtn');
-const accountName = document.getElementById('accountName');
-const accountEmail = document.getElementById('accountEmail');
-const accountContent = document.getElementById('accountContent');
-const logoutBtn = document.getElementById('logoutBtn');
+  try {
+    if (window.firebaseAuth && window.firebaseCreateUser && window.firebaseLogin) {
+      if (isSignup) {
+        await window.firebaseCreateUser(window.firebaseAuth, email, password);
+        showToast('✅ Account created successfully');
+      } else {
+        await window.firebaseLogin(window.firebaseAuth, email, password);
+        showToast('✅ Logged in successfully');
+      }
+    } else {
+      currentUser = {
+        name: authName.value.trim() || email.split('@')[0],
+        email
+      };
 
-let currentUser = JSON.parse(localStorage.getItem('bitego_user') || 'null');
-let currentOrders = JSON.parse(localStorage.getItem('bitego_current_orders') || '[]');
-let previousOrders = JSON.parse(localStorage.getItem('bitego_previous_orders') || '[]');
-let reservations = JSON.parse(localStorage.getItem('bitego_reservations') || '[]');
+      localStorage.setItem('bitego_user', JSON.stringify(currentUser));
+      updateUserUI();
+      showToast(`✅ Welcome, ${currentUser.name}`);
+    }
+
+    closeModal('authModal');
+  } catch (error) {
+    showToast('❌ ' + error.message);
+  }
+});
 
 function updateUserUI() {
   const loginBtn = document.getElementById('loginBtn');
@@ -694,6 +642,9 @@ function updateUserUI() {
     loginBtn.style.display = 'inline-block';
     signupBtn.style.display = 'inline-block';
     userBox.style.display = 'none';
+
+    accountName.textContent = 'Guest';
+    accountEmail.textContent = 'guest@email.com';
   }
 }
 
@@ -729,7 +680,7 @@ function renderAccountTab(tab = 'current') {
       ? reservations.map(item => `
         <div class="account-item">
           📅 <strong>${item.restaurant}</strong><br>
-          <small>${item.date || 'Date selected'} • ${item.time || 'Time selected'}</small>
+          <small>${item.date} • ${item.time}</small>
         </div>
       `).join('')
       : '<p>No table bookings yet.</p>';
@@ -749,77 +700,50 @@ function renderAccountTab(tab = 'current') {
   }
 }
 
-function saveUserFromAuth() {
-  const nameInput = document.getElementById('authName');
-  const emailInput = document.querySelector('#authForm input[type="email"]');
-
-  const name = nameInput.value.trim() || 'Omar';
-  const email = emailInput.value.trim() || 'user@email.com';
-
-  currentUser = {
-    name,
-    email
-  };
-
-  localStorage.setItem('bitego_user', JSON.stringify(currentUser));
-  updateUserUI();
-}
-
-authForm.addEventListener('submit', event => {
-  event.preventDefault();
-
-  saveUserFromAuth();
-
-  closeModal('authModal');
-  showToast(`✅ Welcome, ${currentUser.name}`);
-});
-
 accountBtn.onclick = () => {
   renderAccountTab('current');
   openModal('accountModal');
 };
 
 document.querySelectorAll('.account-tab').forEach(btn => {
-  btn.onclick = () => {
-    renderAccountTab(btn.dataset.accountTab);
-  };
+  btn.onclick = () => renderAccountTab(btn.dataset.accountTab);
 });
 
-logoutBtn.onclick = () => {
-  currentUser = null;
-  localStorage.removeItem('bitego_user');
+logoutBtn.onclick = async () => {
+  if (window.firebaseAuth && window.firebaseLogout) {
+    await window.firebaseLogout(window.firebaseAuth);
+  } else {
+    currentUser = null;
+    localStorage.removeItem('bitego_user');
+    updateUserUI();
+  }
 
-  updateUserUI();
   closeModal('accountModal');
   showToast('👋 Logged out');
 };
 
 function saveCurrentOrderToAccount() {
   currentOrders = [...cart];
-
   localStorage.setItem('bitego_current_orders', JSON.stringify(currentOrders));
 }
 
-const originalUpdateCartForAccount = updateCart;
+function toggleTheme() {
+  document.body.classList.toggle('dark');
 
-updateCart = function () {
-  originalUpdateCartForAccount();
-  saveCurrentOrderToAccount();
-};
+  if (document.body.classList.contains('dark')) {
+    showToast('🌙 Dark mode on');
+  } else {
+    showToast('☀️ Light mode on');
+  }
+}
 
-const originalBookingSubmit = bookingForm.onsubmit;
+document.getElementById('themeBtn').onclick = toggleTheme;
+document.getElementById('bottomThemeBtn').onclick = toggleTheme;
 
-bookingForm.addEventListener('submit', () => {
-  reservations.push({
-    restaurant: bookingTitle.textContent.replace('Book a table at ', ''),
-    date: 'Selected date',
-    time: 'Selected time'
-  });
-
-  localStorage.setItem('bitego_reservations', JSON.stringify(reservations));
+document.getElementById('mobileMenu').addEventListener('click', () => {
+  navLinks.classList.toggle('active');
 });
 
-updateUserUI();
 const bottomLoginBtn = document.getElementById('bottomLoginBtn');
 const bottomSignupBtn = document.getElementById('bottomSignupBtn');
 
@@ -836,3 +760,28 @@ if (bottomSignupBtn) {
     setAuthMode('signup');
   };
 }
+
+function fakeNotification() {
+  const notifications = [
+    '🔥 New order from Bella Napoli',
+    '🍔 Urban Burger is trending today',
+    '🍣 Sushi Zen tables are almost full',
+    '🥙 New Arabic meals added'
+  ];
+
+  const random = notifications[Math.floor(Math.random() * notifications.length)];
+
+  showToast(random);
+}
+
+setInterval(fakeNotification, 15000);
+
+window.addEventListener('scroll', () => {
+  const navbar = document.querySelector('.navbar');
+
+  if (window.scrollY > 40) {
+    navbar.style.padding = '12px 7%';
+  } else {
+    navbar.style.padding = '16px 7%';
+  }
+});
