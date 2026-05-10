@@ -820,3 +820,19 @@ bookingForm.addEventListener('submit', () => {
 });
 
 updateUserUI();
+const bottomLoginBtn = document.getElementById('bottomLoginBtn');
+const bottomSignupBtn = document.getElementById('bottomSignupBtn');
+
+if (bottomLoginBtn) {
+  bottomLoginBtn.onclick = () => {
+    openModal('authModal');
+    setAuthMode('login');
+  };
+}
+
+if (bottomSignupBtn) {
+  bottomSignupBtn.onclick = () => {
+    openModal('authModal');
+    setAuthMode('signup');
+  };
+}
