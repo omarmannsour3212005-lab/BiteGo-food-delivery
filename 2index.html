@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>BiteGo - Food Delivery & Table Booking</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="./2style.css">
+</head>
+
+<body>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="toast" id="toast">Done</div>
+
+  <nav class="navbar">
+    <a class="logo" href="#home">
+      <span>⚡</span>
+      BiteGo
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a href="#restaurants">Restaurants</a>
+      <a href="#recommendations">AI Picks</a>
+      <a href="#features">Features</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn">🌙</button>
+
+      <button class="cart-nav-btn" id="cartBtn">
+        🛒 Cart <span id="cartCount">0</span>
+      </button>
+
+      <button class="login-btn" id="loginBtn">Login</button>
+      <button class="signup-btn" id="signupBtn">Sign up</button>
+
+      <div class="user-box" id="userBox">
+        <button class="user-btn" id="userBtn">
+          Hi, <span id="userNameText">User</span> 👋
+        </button>
+
+        <button class="account-btn" id="accountBtn">
+          My Account
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-menu" id="mobileMenu">☰</div>
+  </nav>
+
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <span class="badge">🚀 Delivery + Restaurant Booking</span>
+
+      <h1>
+        Your favorite food,
+        <span>delivered fast</span>
+        or booked for dinner.
+      </h1>
+
+      <p>
+        Browse top restaurants, order meals for delivery,
+        or reserve a table for a perfect night out —
+        all from one smooth modern platform.
+      </p>
+
+      <div class="search-wrap">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search restaurant or food...">
+
+          <select id="categorySelect">
+            <option value="all">All Categories</option>
+            <option value="italian">Italian</option>
+            <option value="burger">Burger</option>
+            <option value="sushi">Sushi</option>
+            <option value="arabic">Arabic</option>
+          </select>
+
+          <button id="searchBtn">Search</button>
+        </div>
+
+        <div class="suggestions" id="suggestions"></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="delivery-card">
+        <div>
+          <strong>Fast delivery near you</strong>
+          <p>Track your order and enjoy fresh food.</p>
+        </div>
+
+        <span class="time-pill">25 min</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="restaurants">
+    <div class="section-head">
+      <div>
+        <h2>Popular restaurants</h2>
+        <p>
+          Choose a restaurant, order delivery,
+          view details, add favorites,
+          or reserve a table.
+        </p>
+      </div>
+    </div>
+
+    <div class="categories">
+      <button class="cat-btn active" data-category="all">All</button>
+      <button class="cat-btn" data-category="italian">🍝 Italian</button>
+      <button class="cat-btn" data-category="burger">🍔 Burger</button>
+      <button class="cat-btn" data-category="sushi">🍣 Sushi</button>
+      <button class="cat-btn" data-category="arabic">🥙 Arabic</button>
+      <button class="cat-btn" data-category="favorites">❤️ Favorites</button>
+    </div>
+
+    <div class="restaurant-grid" id="restaurantGrid"></div>
+  </section>
+
+  <section class="section" id="recommendations">
+    <div class="section-head">
+      <div>
+        <h2>AI recommendations</h2>
+        <p>
+          Smart food suggestions based on popular choices
+          and restaurant categories.
+        </p>
+      </div>
+    </div>
+
+    <div class="recommendations" id="recommendationsGrid"></div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="app-preview">
+      <div>
+        <span class="badge">Portfolio Demo</span>
+
+        <h2>Built like a real food app</h2>
+
+        <p>
+          This demo includes cart, checkout, tracking,
+          restaurant details, favorites, reviews,
+          booking, dark mode, toast notifications,
+          search suggestions, and mobile bottom navigation.
+        </p>
+
+        <div class="features-list">
+          <div>✅ Restaurant pages with menu and reviews</div>
+          <div>✅ Cart and fake checkout</div>
+          <div>✅ Table reservation modal</div>
+          <div>✅ Fake live delivery tracking</div>
+          <div>✅ Dark mode and mobile app style</div>
+        </div>
+      </div>
+
+      <div class="phone-mockup">
+        <div class="phone-top">
+          <span>BiteGo</span>
+          <span>🛒</span>
+        </div>
+
+        <div class="mini-search">
+          Search for pizza, burger...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING MODAL -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal">
+      <button class="close-modal" data-close="bookingModal">×</button>
+
+      <h3 id="bookingTitle">Book a table</h3>
+      <p>Choose your date, time, and number of guests.</p>
+
+      <form class="modal-form" id="bookingForm">
+        <input type="text" placeholder="Full name" required>
+        <input type="email" placeholder="Email address" required>
+        <input type="date" required>
+
+        <select required>
+          <option value="">Select time</option>
+          <option>18:00</option>
+          <option>19:00</option>
+          <option>20:00</option>
+          <option>21:00</option>
+          <option>22:00</option>
+        </select>
+
+        <select required>
+          <option value="">Guests</option>
+          <option>2 guests</option>
+          <option>3 guests</option>
+          <option>4 guests</option>
+          <option>5+ guests</option>
+        </select>
+
+        <button type="submit">Confirm reservation</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- DETAILS MODAL -->
+  <div class="modal-overlay" id="detailsModal">
+    <div class="modal wide-modal">
+      <button class="close-modal" data-close="detailsModal">×</button>
+      <div id="detailsContent"></div>
+    </div>
+  </div>
+
+  <!-- CART MODAL -->
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal">
+      <button class="close-modal" data-close="cartModal">×</button>
+
+      <h3>Your cart</h3>
+
+      <p>
+        Review your order and continue to checkout.
+      </p>
+
+      <div id="cartItems"></div>
+
+      <div class="cart-total">
+        <span>Total</span>
+        <span id="cartTotal">€0.00</span>
+      </div>
+
+      <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+
+      <form class="modal-form checkout-form" id="checkoutForm">
+        <input type="text" placeholder="Full Name" required>
+        <input type="text" placeholder="Delivery Address" required>
+        <input type="text" placeholder="Phone Number" required>
+
+        <select required>
+          <option value="">Payment method</option>
+          <option>Cash</option>
+          <option>Card</option>
+        </select>
+
+        <button type="submit">Confirm Order</button>
+      </form>
+
+      <div class="tracking" id="trackingBox">
+        <h3>Live tracking</h3>
+
+        <div class="track-step active">
+          <span class="dot"></span>
+          Order received
+        </div>
+
+        <div class="track-step" id="step2">
+          <span class="dot"></span>
+          Preparing food
+        </div>
+
+        <div class="track-step" id="step3">
+          <span class="dot"></span>
+          Driver on the way
+        </div>
+
+        <div class="track-step" id="step4">
+          <span class="dot"></span>
+          Delivered
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN / SIGNUP MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal auth-modal">
+      <button class="close-modal" data-close="authModal">×</button>
+
+      <div class="auth-logo">
+        <span>⚡</span>
+        <strong>BiteGo</strong>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab">Login</button>
+        <button class="auth-tab" id="signupTab">Sign Up</button>
+      </div>
+
+      <h3 id="authTitle">Welcome back</h3>
+      <p id="authText">Login to continue ordering your favorite meals.</p>
+
+      <form class="modal-form" id="authForm">
+        <input type="text" placeholder="Full name" id="authName">
+        <input type="email" placeholder="Email address" required>
+        <input type="password" placeholder="Password" required>
+
+        <button type="submit" id="authSubmit">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ACCOUNT MODAL -->
+  <div class="modal-overlay" id="accountModal">
+    <div class="modal account-modal">
+      <button class="close-modal" data-close="accountModal">×</button>
+
+      <h3>My Account</h3>
+      <p>Manage your orders, reservations, and favorite restaurants.</p>
+
+      <div class="account-info">
+        <div>👤 <strong>Name:</strong> <span id="accountName">Guest</span></div>
+        <div>📧 <strong>Email:</strong> <span id="accountEmail">guest@email.com</span></div>
+      </div>
+
+      <div class="account-tabs">
+        <button class="account-tab active" data-account-tab="current">Current Orders</button>
+        <button class="account-tab" data-account-tab="previous">Previous Orders</button>
+        <button class="account-tab" data-account-tab="bookings">Bookings</button>
+        <button class="account-tab" data-account-tab="favorites">Favorites</button>
+      </div>
+
+      <div class="account-content" id="accountContent"></div>
+
+      <button class="logout-btn" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <div class="bottom-nav">
+    <button onclick="location.href='#home'">
+      🏠<br>Home
+    </button>
+
+    <button onclick="location.href='#restaurants'">
+      🔎<br>Search
+    </button>
+
+    <button id="bottomCartBtn">
+      🛒<br>Cart
+    </button>
+
+    <button id="bottomThemeBtn">
+      🌙<br>Theme
+    </button>
+  </div>
+
+  <footer id="contact">
+    <p>
+      <strong>BiteGo Demo</strong><br>
+      Created by <strong>OMAR MANSOUR</strong>
+    </p>
+  </footer>
+
+  <script src="./2script.js"></script>
+</body>
+</html>
