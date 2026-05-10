@@ -149,16 +149,7 @@ let isSignup = false;
 window.addEventListener('load', () => {
   const loader = document.getElementById('loader');
 
-  if (loader) {
-    setTimeout(() => loader.classList.add('hide'), 550);
-  }
-
-  renderRestaurants(restaurants);
-  renderRecommendations();
-  updateCart();
-  setAuthMode('login');
-
- if (window.firebaseObserver && window.firebaseAuth) {
+  if (window.firebaseObserver && window.firebaseAuth) {
 
     window.firebaseObserver(window.firebaseAuth, (user) => {
 
@@ -183,7 +174,8 @@ window.addEventListener('load', () => {
         }
     });
 }
-  
+});
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
@@ -597,40 +589,58 @@ document.getElementById('signupBtn').onclick = () => {
 };
 
 authForm.addEventListener('submit', async event => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const email = authForm.querySelector('input[type="email"]').value.trim();
-  const password = authForm.querySelector('input[type="password"]').value.trim();
+    const email = authForm.querySelector('input[type="email"]').value.trim();
+    const password = authForm.querySelector('input[type="password"]').value.trim();
 
-  if (!email || !password) {
-    showToast('❌ Please enter email and password');
-    return;
-  }
-
-  try {
-    if (window.firebaseAuth && window.firebaseCreateUser && window.firebaseLogin) {
-      if (isSignup) {
-        await window.firebaseCreateUser(window.firebaseAuth, email, password);
-        showToast('✅ Account created successfully');
-      } else {
-        await window.firebaseLogin(window.firebaseAuth, email, password);
-        showToast('✅ Logged in successfully');
-      }
-    } else {
-      currentUser = {
-        name: authName.value.trim() || email.split('@')[0],
-        email
-      };
-
-      localStorage.setItem('bitego_user', JSON.stringify(currentUser));
-      updateUserUI();
-      showToast(`✅ Welcome, ${currentUser.name}`);
+    if (!email || !password) {
+        showToast('❌ Please enter email and password');
+        return;
     }
 
-    closeModal('authModal');
-  } catch (error) {
-    showToast('❌ ' + error.message);
-  }
+    try {
+
+        let userCredential;
+
+        if (isSignup) {
+
+            userCredential = await window.firebaseCreateUser(
+                window.firebaseAuth,
+                email,
+                password
+            );
+
+            showToast('✅ Account created successfully');
+
+        } else {
+
+            userCredential = await window.firebaseLogin(
+                window.firebaseAuth,
+                email,
+                password
+            );
+
+            showToast('✅ Logged in successfully');
+        }
+
+        currentUser = {
+            name: authName.value.trim() || email.split('@')[0],
+            email: email
+        };
+
+        localStorage.setItem('bitego_user', JSON.stringify(currentUser));
+
+        updateUserUI();
+
+        showToast(`👋 Welcome, ${currentUser.name}`);
+
+        closeModal('authModal');
+
+    } catch (error) {
+
+        showToast('❌ ' + error.message);
+    }
 });
 
 function updateUserUI() {
@@ -795,40 +805,4 @@ window.addEventListener('scroll', () => {
   } else {
     navbar.style.padding = '16px 7%';
   }
-});
-/* EMERGENCY BUTTON FIX */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const cartBtn = document.getElementById("cartBtn");
-  const bottomCartBtn = document.getElementById("bottomCartBtn");
-  const loginBtn = document.getElementById("loginBtn");
-  const signupBtn = document.getElementById("signupBtn");
-  const loginTab = document.getElementById("loginTab");
-  const signupTab = document.getElementById("signupTab");
-  const themeBtn = document.getElementById("themeBtn");
-  const bottomThemeBtn = document.getElementById("bottomThemeBtn");
-
-  if (cartBtn) cartBtn.onclick = () => openModal("cartModal");
-  if (bottomCartBtn) bottomCartBtn.onclick = () => openModal("cartModal");
-
-  if (loginBtn) {
-    loginBtn.onclick = () => {
-      openModal("authModal");
-      setAuthMode("login");
-    };
-  }
-
-  if (signupBtn) {
-    signupBtn.onclick = () => {
-      openModal("authModal");
-      setAuthMode("signup");
-    };
-  }
-
-  if (loginTab) loginTab.onclick = () => setAuthMode("login");
-  if (signupTab) signupTab.onclick = () => setAuthMode("signup");
-
-  if (themeBtn) themeBtn.onclick = toggleTheme;
-  if (bottomThemeBtn) bottomThemeBtn.onclick = toggleTheme;
-});
 });
