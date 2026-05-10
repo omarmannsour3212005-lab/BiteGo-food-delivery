@@ -646,18 +646,26 @@ authForm.addEventListener('submit', async event => {
 function updateUserUI() {
   const loginBtn = document.getElementById('loginBtn');
   const signupBtn = document.getElementById('signupBtn');
+  const bottomLoginBtn = document.getElementById('bottomLoginBtn');
+  const bottomSignupBtn = document.getElementById('bottomSignupBtn');
 
   if (currentUser) {
-    loginBtn.style.display = 'none';
-    signupBtn.style.display = 'none';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (signupBtn) signupBtn.style.display = 'none';
+    if (bottomLoginBtn) bottomLoginBtn.style.display = 'none';
+    if (bottomSignupBtn) bottomSignupBtn.style.display = 'none';
+
     userBox.style.display = 'flex';
 
     userNameText.textContent = currentUser.name;
     accountName.textContent = currentUser.name;
     accountEmail.textContent = currentUser.email;
   } else {
-    loginBtn.style.display = 'inline-block';
-    signupBtn.style.display = 'inline-block';
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (signupBtn) signupBtn.style.display = 'inline-block';
+    if (bottomLoginBtn) bottomLoginBtn.style.display = 'inline-block';
+    if (bottomSignupBtn) bottomSignupBtn.style.display = 'inline-block';
+
     userBox.style.display = 'none';
 
     accountName.textContent = 'Guest';
