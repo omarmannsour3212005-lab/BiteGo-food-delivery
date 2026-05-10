@@ -738,8 +738,12 @@ function toggleTheme() {
 }
 
 document.getElementById('themeBtn').onclick = toggleTheme;
-document.getElementById('bottomThemeBtn').onclick = toggleTheme;
 
+const bottomThemeBtn = document.getElementById('bottomThemeBtn');
+
+if (bottomThemeBtn) {
+  bottomThemeBtn.onclick = toggleTheme;
+}
 document.getElementById('mobileMenu').addEventListener('click', () => {
   navLinks.classList.toggle('active');
 });
