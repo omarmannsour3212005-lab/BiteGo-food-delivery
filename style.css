@@ -1464,3 +1464,15 @@ footer strong {
     padding-top: 35px !important;
   }
 }
+@media (max-width: 760px) {
+  .bottom-nav {
+    display: flex !important;
+    overflow-x: auto;
+    gap: 6px;
+  }
+
+  .bottom-nav button {
+    min-width: 60px;
+    font-size: 11px;
+  }
+}
