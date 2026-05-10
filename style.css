@@ -1367,3 +1367,38 @@ footer strong {
   }
 
 }
+/* MOBILE NAVBAR FIX */
+
+@media (max-width: 760px) {
+
+  .navbar {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 5%;
+  }
+
+  .nav-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-links {
+    display: none !important;
+  }
+
+  .login-btn,
+  .signup-btn,
+  .cart-nav-btn,
+  .icon-btn {
+    display: flex !important;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .mobile-menu {
+    display: none !important;
+  }
+
+}
