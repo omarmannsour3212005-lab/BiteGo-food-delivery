@@ -785,3 +785,38 @@ window.addEventListener('scroll', () => {
     navbar.style.padding = '16px 7%';
   }
 });
+/* EMERGENCY BUTTON FIX */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const cartBtn = document.getElementById("cartBtn");
+  const bottomCartBtn = document.getElementById("bottomCartBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const signupBtn = document.getElementById("signupBtn");
+  const loginTab = document.getElementById("loginTab");
+  const signupTab = document.getElementById("signupTab");
+  const themeBtn = document.getElementById("themeBtn");
+  const bottomThemeBtn = document.getElementById("bottomThemeBtn");
+
+  if (cartBtn) cartBtn.onclick = () => openModal("cartModal");
+  if (bottomCartBtn) bottomCartBtn.onclick = () => openModal("cartModal");
+
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      openModal("authModal");
+      setAuthMode("login");
+    };
+  }
+
+  if (signupBtn) {
+    signupBtn.onclick = () => {
+      openModal("authModal");
+      setAuthMode("signup");
+    };
+  }
+
+  if (loginTab) loginTab.onclick = () => setAuthMode("login");
+  if (signupTab) signupTab.onclick = () => setAuthMode("signup");
+
+  if (themeBtn) themeBtn.onclick = toggleTheme;
+  if (bottomThemeBtn) bottomThemeBtn.onclick = toggleTheme;
+});
