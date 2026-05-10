@@ -831,3 +831,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (themeBtn) themeBtn.onclick = toggleTheme;
   if (bottomThemeBtn) bottomThemeBtn.onclick = toggleTheme;
 });
+});
