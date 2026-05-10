@@ -401,37 +401,35 @@
 
   <!-- FIREBASE -->
   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsn9S2vCNs9kiob3BH5T1mYwdhwAkH3BU",
+    authDomain: "bitego-f781a.firebaseapp.com",
+    projectId: "bitego-f781a",
+    storageBucket: "bitego-f781a.firebasestorage.app",
+    messagingSenderId: "47412833208",
+    appId: "1:47412833208:web:8324df17f9d60adeb5bd4d",
+    measurementId: "G-LCKHN4Z4ZV"
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAsn9S2vCNs9kiob3BH5T1mYwdhwAkH3BU",
-      authDomain: "bitego-f781a.firebaseapp.com",
-      projectId: "bitego-f781a",
-      storageBucket: "bitego-f781a.firebasestorage.app",
-      messagingSenderId: "47412833208",
-      appId: "1:47412833208:web:8324df17f9d60adeb5bd4d",
-      measurementId: "G-LCKHN4Z4ZV"
-    };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    window.firebaseAuth = auth;
-    window.firebaseCreateUser = createUserWithEmailAndPassword;
-    window.firebaseLogin = signInWithEmailAndPassword;
-    window.firebaseObserver = onAuthStateChanged;
-    window.firebaseLogout = signOut;
-
-  </script>
+  window.firebaseAuth = auth;
+  window.firebaseCreateUser = createUserWithEmailAndPassword;
+  window.firebaseLogin = signInWithEmailAndPassword;
+  window.firebaseObserver = onAuthStateChanged;
+  window.firebaseLogout = signOut;
+</script>
 
   <script src="script.js?v=6"></script>
 
