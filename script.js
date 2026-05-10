@@ -110,15 +110,18 @@ const searchInput = document.getElementById('searchInput');
 const searchBtn = document.getElementById('searchBtn');
 const suggestions = document.getElementById('suggestions');
 const toast = document.getElementById('toast');
+
 const cartCount = document.getElementById('cartCount');
 const cartItems = document.getElementById('cartItems');
 const cartTotal = document.getElementById('cartTotal');
-const bookingTitle = document.getElementById('bookingTitle');
-const bookingForm = document.getElementById('bookingForm');
-const detailsContent = document.getElementById('detailsContent');
 const checkoutForm = document.getElementById('checkoutForm');
 const checkoutBtn = document.getElementById('checkoutBtn');
 const trackingBox = document.getElementById('trackingBox');
+
+const bookingTitle = document.getElementById('bookingTitle');
+const bookingForm = document.getElementById('bookingForm');
+const detailsContent = document.getElementById('detailsContent');
+
 const navLinks = document.getElementById('navLinks');
 
 const authForm = document.getElementById('authForm');
@@ -142,41 +145,48 @@ let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
 let currentOrders = JSON.parse(localStorage.getItem('bitego_current_orders') || '[]');
 let previousOrders = JSON.parse(localStorage.getItem('bitego_previous_orders') || '[]');
 let reservations = JSON.parse(localStorage.getItem('bitego_reservations') || '[]');
+
 let currentCategory = 'all';
-let currentUser = null;
+let currentUser = JSON.parse(localStorage.getItem('bitego_user') || 'null');
 let isSignup = false;
 
 window.addEventListener('load', () => {
   const loader = document.getElementById('loader');
 
+  if (loader) {
+    setTimeout(() => {
+      loader.classList.add('hide');
+    }, 550);
+  }
+
+  renderRestaurants(restaurants);
+  renderRecommendations();
+  updateCart();
+  setAuthMode('login');
+  updateUserUI();
+
   if (window.firebaseObserver && window.firebaseAuth) {
+    window.firebaseObserver(window.firebaseAuth, user => {
+      if (user) {
+        currentUser = {
+          name: user.email.split('@')[0],
+          email: user.email
+        };
 
-    window.firebaseObserver(window.firebaseAuth, (user) => {
-
-        if (user) {
-
-            currentUser = {
-                name: user.email.split('@')[0],
-                email: user.email
-            };
-
-            localStorage.setItem('bitego_user', JSON.stringify(currentUser));
-
-            updateUserUI();
-
-        } else {
-
-            currentUser = null;
-
-            localStorage.removeItem('bitego_user');
-
-            updateUserUI();
-        }
+        localStorage.setItem('bitego_user', JSON.stringify(currentUser));
+        updateUserUI();
+      } else {
+        currentUser = null;
+        localStorage.removeItem('bitego_user');
+        updateUserUI();
+      }
     });
-}
+  }
 });
 
 function showToast(message) {
+  if (!toast) return;
+
   toast.textContent = message;
   toast.classList.add('show');
 
@@ -186,15 +196,19 @@ function showToast(message) {
 }
 
 function openModal(id) {
-  document.getElementById(id).classList.add('active');
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.add('active');
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.remove('active');
 }
 
 document.querySelectorAll('[data-close]').forEach(button => {
-  button.addEventListener('click', () => closeModal(button.dataset.close));
+  button.addEventListener('click', () => {
+    closeModal(button.dataset.close);
+  });
 });
 
 document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -206,6 +220,8 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
 });
 
 function renderRestaurants(list) {
+  if (!restaurantGrid) return;
+
   restaurantGrid.innerHTML = '';
 
   if (!list.length) {
@@ -251,7 +267,7 @@ function renderRestaurants(list) {
 }
 
 function getFilteredRestaurants(category = currentCategory) {
-  const searchText = searchInput.value.toLowerCase().trim();
+  const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
   return restaurants.filter(restaurant => {
     const matchesCategory =
@@ -280,7 +296,7 @@ categoryButtons.forEach(button => {
     button.classList.add('active');
     currentCategory = button.dataset.category;
 
-    if (currentCategory !== 'favorites') {
+    if (categorySelect && currentCategory !== 'favorites') {
       categorySelect.value = currentCategory;
     }
 
@@ -288,20 +304,28 @@ categoryButtons.forEach(button => {
   });
 });
 
-searchBtn.addEventListener('click', () => {
-  filterRestaurants(categorySelect.value);
-});
+if (searchBtn) {
+  searchBtn.addEventListener('click', () => {
+    filterRestaurants(categorySelect.value);
+  });
+}
 
-categorySelect.addEventListener('change', () => {
-  filterRestaurants(categorySelect.value);
-});
+if (categorySelect) {
+  categorySelect.addEventListener('change', () => {
+    filterRestaurants(categorySelect.value);
+  });
+}
 
-searchInput.addEventListener('keyup', () => {
-  filterRestaurants(categorySelect.value);
-  showSuggestions();
-});
+if (searchInput) {
+  searchInput.addEventListener('keyup', () => {
+    filterRestaurants(categorySelect.value);
+    showSuggestions();
+  });
+}
 
 function showSuggestions() {
+  if (!suggestions || !searchInput) return;
+
   const text = searchInput.value.toLowerCase().trim();
 
   suggestions.innerHTML = '';
@@ -371,31 +395,33 @@ function updateCart() {
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  cartCount.textContent = count;
-  cartTotal.textContent = `€${total.toFixed(2)}`;
+  if (cartCount) cartCount.textContent = count;
+  if (cartTotal) cartTotal.textContent = `€${total.toFixed(2)}`;
 
-  cartItems.innerHTML = cart.length ? '' : '<p>Your cart is empty.</p>';
+  if (cartItems) {
+    cartItems.innerHTML = cart.length ? '' : '<p>Your cart is empty.</p>';
 
-  cart.forEach((item, index) => {
-    const row = document.createElement('div');
+    cart.forEach((item, index) => {
+      const row = document.createElement('div');
 
-    row.className = 'cart-item';
+      row.className = 'cart-item';
 
-    row.innerHTML = `
-      <div>
-        <strong>${item.name}</strong><br>
-        <small>${item.restaurantName} • €${item.price.toFixed(2)}</small>
-      </div>
+      row.innerHTML = `
+        <div>
+          <strong>${item.name}</strong><br>
+          <small>${item.restaurantName} • €${item.price.toFixed(2)}</small>
+        </div>
 
-      <div class="cart-controls">
-        <button onclick="changeQty(${index}, -1)">−</button>
-        <strong>${item.qty}</strong>
-        <button onclick="changeQty(${index}, 1)">+</button>
-      </div>
-    `;
+        <div class="cart-controls">
+          <button onclick="changeQty(${index}, -1)">−</button>
+          <strong>${item.qty}</strong>
+          <button onclick="changeQty(${index}, 1)">+</button>
+        </div>
+      `;
 
-    cartItems.appendChild(row);
-  });
+      cartItems.appendChild(row);
+    });
+  }
 
   localStorage.setItem('bitego_cart', JSON.stringify(cart));
   saveCurrentOrderToAccount();
@@ -427,11 +453,16 @@ function toggleFavorite(id) {
 function openBooking(id) {
   const restaurant = restaurants.find(item => item.id === id);
 
-  bookingTitle.textContent = `Book a table at ${restaurant.name}`;
+  if (bookingTitle) {
+    bookingTitle.textContent = `Book a table at ${restaurant.name}`;
+  }
+
   openModal('bookingModal');
 }
 
 function openDetails(id) {
+  if (!detailsContent) return;
+
   const restaurant = restaurants.find(item => item.id === id);
 
   detailsContent.innerHTML = `
@@ -480,6 +511,9 @@ function openDetails(id) {
 }
 
 function renderRecommendations() {
+  const recommendationsGrid = document.getElementById('recommendationsGrid');
+  if (!recommendationsGrid) return;
+
   const picks = [
     {
       title: 'Best for quick lunch',
@@ -495,7 +529,7 @@ function renderRecommendations() {
     }
   ];
 
-  document.getElementById('recommendationsGrid').innerHTML = picks
+  recommendationsGrid.innerHTML = picks
     .map(pick => `
       <div class="recommend-card">
         <h3>${pick.title}</h3>
@@ -505,53 +539,67 @@ function renderRecommendations() {
     .join('');
 }
 
-document.getElementById('cartBtn').onclick = () => openModal('cartModal');
-document.getElementById('bottomCartBtn').onclick = () => openModal('cartModal');
+const cartBtn = document.getElementById('cartBtn');
+const bottomCartBtn = document.getElementById('bottomCartBtn');
 
-checkoutBtn.addEventListener('click', () => {
-  if (!cart.length) {
-    showToast('🛒 Your cart is empty');
-    return;
-  }
+if (cartBtn) {
+  cartBtn.onclick = () => openModal('cartModal');
+}
 
-  checkoutForm.classList.toggle('active');
-});
+if (bottomCartBtn) {
+  bottomCartBtn.onclick = () => openModal('cartModal');
+}
 
-checkoutForm.addEventListener('submit', event => {
-  event.preventDefault();
+if (checkoutBtn) {
+  checkoutBtn.addEventListener('click', () => {
+    if (!cart.length) {
+      showToast('🛒 Your cart is empty');
+      return;
+    }
 
-  checkoutForm.classList.remove('active');
-  trackingBox.classList.add('active');
-
-  previousOrders = [...previousOrders, ...cart];
-  localStorage.setItem('bitego_previous_orders', JSON.stringify(previousOrders));
-
-  cart = [];
-  updateCart();
-
-  showToast('✅ Order placed successfully');
-
-  setTimeout(() => document.getElementById('step2').classList.add('active'), 900);
-  setTimeout(() => document.getElementById('step3').classList.add('active'), 1800);
-  setTimeout(() => document.getElementById('step4').classList.add('active'), 2800);
-});
-
-bookingForm.addEventListener('submit', event => {
-  event.preventDefault();
-
-  reservations.push({
-    restaurant: bookingTitle.textContent.replace('Book a table at ', ''),
-    date: 'Selected date',
-    time: 'Selected time'
+    checkoutForm.classList.toggle('active');
   });
+}
 
-  localStorage.setItem('bitego_reservations', JSON.stringify(reservations));
+if (checkoutForm) {
+  checkoutForm.addEventListener('submit', event => {
+    event.preventDefault();
 
-  bookingForm.reset();
-  closeModal('bookingModal');
+    checkoutForm.classList.remove('active');
+    if (trackingBox) trackingBox.classList.add('active');
 
-  showToast('✅ Reservation confirmed');
-});
+    previousOrders = [...previousOrders, ...cart];
+    localStorage.setItem('bitego_previous_orders', JSON.stringify(previousOrders));
+
+    cart = [];
+    updateCart();
+
+    showToast('✅ Order placed successfully');
+
+    setTimeout(() => document.getElementById('step2')?.classList.add('active'), 900);
+    setTimeout(() => document.getElementById('step3')?.classList.add('active'), 1800);
+    setTimeout(() => document.getElementById('step4')?.classList.add('active'), 2800);
+  });
+}
+
+if (bookingForm) {
+  bookingForm.addEventListener('submit', event => {
+    event.preventDefault();
+
+    reservations.push({
+      restaurant: bookingTitle.textContent.replace('Book a table at ', ''),
+      date: 'Selected date',
+      time: 'Selected time'
+    });
+
+    localStorage.setItem('bitego_reservations', JSON.stringify(reservations));
+
+    bookingForm.reset();
+    closeModal('bookingModal');
+
+    showToast('✅ Reservation confirmed');
+  });
+}
 
 function setAuthMode(mode) {
   isSignup = mode === 'signup';
@@ -575,73 +623,79 @@ function setAuthMode(mode) {
   }
 }
 
-loginTab.onclick = () => setAuthMode('login');
-signupTab.onclick = () => setAuthMode('signup');
+if (loginTab) loginTab.onclick = () => setAuthMode('login');
+if (signupTab) signupTab.onclick = () => setAuthMode('signup');
 
-document.getElementById('loginBtn').onclick = () => {
-  openModal('authModal');
-  setAuthMode('login');
-};
+const loginBtn = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
 
-document.getElementById('signupBtn').onclick = () => {
-  openModal('authModal');
-  setAuthMode('signup');
-};
+if (loginBtn) {
+  loginBtn.onclick = () => {
+    openModal('authModal');
+    setAuthMode('login');
+  };
+}
 
-authForm.addEventListener('submit', async event => {
+if (signupBtn) {
+  signupBtn.onclick = () => {
+    openModal('authModal');
+    setAuthMode('signup');
+  };
+}
+
+if (authForm) {
+  authForm.addEventListener('submit', async event => {
     event.preventDefault();
 
     const email = authForm.querySelector('input[type="email"]').value.trim();
     const password = authForm.querySelector('input[type="password"]').value.trim();
 
     if (!email || !password) {
-        showToast('❌ Please enter email and password');
-        return;
+      showToast('❌ Please enter email and password');
+      return;
     }
 
     try {
+      let userCredential;
 
-        let userCredential;
+      if (isSignup) {
+        userCredential = await window.firebaseCreateUser(
+          window.firebaseAuth,
+          email,
+          password
+        );
 
-        if (isSignup) {
+        showToast('✅ Account created successfully');
+      } else {
+        userCredential = await window.firebaseLogin(
+          window.firebaseAuth,
+          email,
+          password
+        );
 
-            userCredential = await window.firebaseCreateUser(
-                window.firebaseAuth,
-                email,
-                password
-            );
+        showToast('✅ Logged in successfully');
+      }
 
-            showToast('✅ Account created successfully');
+      currentUser = {
+        name: authName.value.trim() || userCredential.user.email.split('@')[0],
+        email: userCredential.user.email
+      };
 
-        } else {
+      localStorage.setItem('bitego_user', JSON.stringify(currentUser));
 
-            userCredential = await window.firebaseLogin(
-                window.firebaseAuth,
-                email,
-                password
-            );
+      updateUserUI();
 
-            showToast('✅ Logged in successfully');
-        }
+      closeModal('authModal');
 
-        currentUser = {
-            name: authName.value.trim() || email.split('@')[0],
-            email: email
-        };
+      renderAccountTab('current');
+      openModal('accountModal');
 
-        localStorage.setItem('bitego_user', JSON.stringify(currentUser));
-
-        updateUserUI();
-
-        showToast(`👋 Welcome, ${currentUser.name}`);
-
-        closeModal('authModal');
-
+      showToast(`👋 Welcome, ${currentUser.name}`);
     } catch (error) {
-
-        showToast('❌ ' + error.message);
+      showToast('❌ ' + error.message);
     }
-});
+  });
+}
 
 function updateUserUI() {
   const loginBtn = document.getElementById('loginBtn');
@@ -650,14 +704,18 @@ function updateUserUI() {
   const bottomSignupBtn = document.getElementById('bottomSignupBtn');
 
   if (currentUser) {
-    loginBtn.style.display = 'inline-block';
-    loginBtn.textContent = `👋 ${currentUser.name}`;
-    loginBtn.onclick = () => {
-      renderAccountTab('current');
-      openModal('accountModal');
-    };
+    if (loginBtn) {
+      loginBtn.style.display = 'inline-block';
+      loginBtn.textContent = `👋 ${currentUser.name}`;
+      loginBtn.onclick = () => {
+        renderAccountTab('current');
+        openModal('accountModal');
+      };
+    }
 
-    signupBtn.style.display = 'none';
+    if (signupBtn) {
+      signupBtn.style.display = 'none';
+    }
 
     if (bottomLoginBtn) {
       bottomLoginBtn.innerHTML = '👤<br>Account';
@@ -675,18 +733,21 @@ function updateUserUI() {
       userBox.style.display = 'none';
     }
 
-    accountName.textContent = currentUser.name;
-    accountEmail.textContent = currentUser.email;
-
+    if (accountName) accountName.textContent = currentUser.name;
+    if (accountEmail) accountEmail.textContent = currentUser.email;
   } else {
-    loginBtn.style.display = 'inline-block';
-    loginBtn.textContent = 'Login';
-    loginBtn.onclick = () => {
-      openModal('authModal');
-      setAuthMode('login');
-    };
+    if (loginBtn) {
+      loginBtn.style.display = 'inline-block';
+      loginBtn.textContent = 'Login';
+      loginBtn.onclick = () => {
+        openModal('authModal');
+        setAuthMode('login');
+      };
+    }
 
-    signupBtn.style.display = 'inline-block';
+    if (signupBtn) {
+      signupBtn.style.display = 'inline-block';
+    }
 
     if (bottomLoginBtn) {
       bottomLoginBtn.innerHTML = '👤<br>Login';
@@ -700,8 +761,8 @@ function updateUserUI() {
       bottomSignupBtn.style.display = 'inline-block';
     }
 
-    accountName.textContent = 'Guest';
-    accountEmail.textContent = 'guest@email.com';
+    if (accountName) accountName.textContent = 'Guest';
+    if (accountEmail) accountEmail.textContent = 'guest@email.com';
   }
 }
 
@@ -757,27 +818,31 @@ function renderAccountTab(tab = 'current') {
   }
 }
 
-accountBtn.onclick = () => {
-  renderAccountTab('current');
-  openModal('accountModal');
-};
+if (accountBtn) {
+  accountBtn.onclick = () => {
+    renderAccountTab('current');
+    openModal('accountModal');
+  };
+}
 
 document.querySelectorAll('.account-tab').forEach(btn => {
   btn.onclick = () => renderAccountTab(btn.dataset.accountTab);
 });
 
-logoutBtn.onclick = async () => {
-  if (window.firebaseAuth && window.firebaseLogout) {
-    await window.firebaseLogout(window.firebaseAuth);
-  } else {
+if (logoutBtn) {
+  logoutBtn.onclick = async () => {
+    if (window.firebaseAuth && window.firebaseLogout) {
+      await window.firebaseLogout(window.firebaseAuth);
+    }
+
     currentUser = null;
     localStorage.removeItem('bitego_user');
     updateUserUI();
-  }
 
-  closeModal('accountModal');
-  showToast('👋 Logged out');
-};
+    closeModal('accountModal');
+    showToast('👋 Logged out');
+  };
+}
 
 function saveCurrentOrderToAccount() {
   currentOrders = [...cart];
@@ -794,16 +859,24 @@ function toggleTheme() {
   }
 }
 
-document.getElementById('themeBtn').onclick = toggleTheme;
-
+const themeBtn = document.getElementById('themeBtn');
 const bottomThemeBtn = document.getElementById('bottomThemeBtn');
+
+if (themeBtn) {
+  themeBtn.onclick = toggleTheme;
+}
 
 if (bottomThemeBtn) {
   bottomThemeBtn.onclick = toggleTheme;
 }
-document.getElementById('mobileMenu').addEventListener('click', () => {
-  navLinks.classList.toggle('active');
-});
+
+const mobileMenu = document.getElementById('mobileMenu');
+
+if (mobileMenu) {
+  mobileMenu.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+  });
+}
 
 const bottomLoginBtn = document.getElementById('bottomLoginBtn');
 const bottomSignupBtn = document.getElementById('bottomSignupBtn');
@@ -839,6 +912,8 @@ setInterval(fakeNotification, 15000);
 
 window.addEventListener('scroll', () => {
   const navbar = document.querySelector('.navbar');
+
+  if (!navbar) return;
 
   if (window.scrollY > 40) {
     navbar.style.padding = '12px 7%';
