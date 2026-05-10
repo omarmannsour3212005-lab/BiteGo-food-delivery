@@ -650,23 +650,55 @@ function updateUserUI() {
   const bottomSignupBtn = document.getElementById('bottomSignupBtn');
 
   if (currentUser) {
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (signupBtn) signupBtn.style.display = 'none';
-    if (bottomLoginBtn) bottomLoginBtn.style.display = 'none';
-    if (bottomSignupBtn) bottomSignupBtn.style.display = 'none';
+    loginBtn.style.display = 'inline-block';
+    loginBtn.textContent = `👋 ${currentUser.name}`;
+    loginBtn.onclick = () => {
+      renderAccountTab('current');
+      openModal('accountModal');
+    };
 
-    userBox.style.display = 'flex';
+    signupBtn.style.display = 'none';
 
-    userNameText.textContent = currentUser.name;
+    if (bottomLoginBtn) {
+      bottomLoginBtn.innerHTML = '👤<br>Account';
+      bottomLoginBtn.onclick = () => {
+        renderAccountTab('current');
+        openModal('accountModal');
+      };
+    }
+
+    if (bottomSignupBtn) {
+      bottomSignupBtn.style.display = 'none';
+    }
+
+    if (userBox) {
+      userBox.style.display = 'none';
+    }
+
     accountName.textContent = currentUser.name;
     accountEmail.textContent = currentUser.email;
-  } else {
-    if (loginBtn) loginBtn.style.display = 'inline-block';
-    if (signupBtn) signupBtn.style.display = 'inline-block';
-    if (bottomLoginBtn) bottomLoginBtn.style.display = 'inline-block';
-    if (bottomSignupBtn) bottomSignupBtn.style.display = 'inline-block';
 
-    userBox.style.display = 'none';
+  } else {
+    loginBtn.style.display = 'inline-block';
+    loginBtn.textContent = 'Login';
+    loginBtn.onclick = () => {
+      openModal('authModal');
+      setAuthMode('login');
+    };
+
+    signupBtn.style.display = 'inline-block';
+
+    if (bottomLoginBtn) {
+      bottomLoginBtn.innerHTML = '👤<br>Login';
+      bottomLoginBtn.onclick = () => {
+        openModal('authModal');
+        setAuthMode('login');
+      };
+    }
+
+    if (bottomSignupBtn) {
+      bottomSignupBtn.style.display = 'inline-block';
+    }
 
     accountName.textContent = 'Guest';
     accountEmail.textContent = 'guest@email.com';
