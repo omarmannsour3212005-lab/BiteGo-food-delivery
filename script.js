@@ -158,25 +158,32 @@ window.addEventListener('load', () => {
   updateCart();
   setAuthMode('login');
 
-  if (window.firebaseObserver && window.firebaseAuth) {
-    window.firebaseObserver(window.firebaseAuth, user => {
-      if (user) {
-        currentUser = {
-          name: user.email.split('@')[0],
-          email: user.email
-        };
-      } else {
-        currentUser = null;
-      }
+ if (window.firebaseObserver && window.firebaseAuth) {
 
-      updateUserUI();
+    window.firebaseObserver(window.firebaseAuth, (user) => {
+
+        if (user) {
+
+            currentUser = {
+                name: user.email.split('@')[0],
+                email: user.email
+            };
+
+            localStorage.setItem('bitego_user', JSON.stringify(currentUser));
+
+            updateUserUI();
+
+        } else {
+
+            currentUser = null;
+
+            localStorage.removeItem('bitego_user');
+
+            updateUserUI();
+        }
     });
-  } else {
-    currentUser = JSON.parse(localStorage.getItem('bitego_user') || 'null');
-    updateUserUI();
-  }
-});
-
+}
+  
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
