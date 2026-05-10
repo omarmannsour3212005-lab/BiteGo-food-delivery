@@ -1346,3 +1346,24 @@ footer strong {
     grid-template-columns: 1fr 1fr;
   }
 }
+@media (max-width: 760px) {
+
+  .nav-actions {
+    display: flex !important;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .nav-actions button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .login-btn,
+  .signup-btn,
+  .cart-nav-btn,
+  .icon-btn {
+    display: flex !important;
+  }
+
+}
