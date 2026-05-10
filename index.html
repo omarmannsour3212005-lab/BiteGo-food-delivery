@@ -263,6 +263,88 @@
 
   </section>
 
+  <!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal">
+    <button class="close-modal" data-close="cartModal">×</button>
+
+    <h3>Your cart</h3>
+    <p>Review your order and continue to checkout.</p>
+
+    <div id="cartItems"></div>
+
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cartTotal">€0.00</span>
+    </div>
+
+    <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+
+    <form class="modal-form checkout-form" id="checkoutForm">
+      <input type="text" placeholder="Full Name" required>
+      <input type="text" placeholder="Delivery Address" required>
+      <input type="text" placeholder="Phone Number" required>
+
+      <select required>
+        <option value="">Payment method</option>
+        <option>Cash</option>
+        <option>Card</option>
+      </select>
+
+      <button type="submit">Confirm Order</button>
+    </form>
+
+    <div class="tracking" id="trackingBox">
+      <h3>Live tracking</h3>
+      <div class="track-step active"><span class="dot"></span>Order received</div>
+      <div class="track-step" id="step2"><span class="dot"></span>Preparing food</div>
+      <div class="track-step" id="step3"><span class="dot"></span>Driver on the way</div>
+      <div class="track-step" id="step4"><span class="dot"></span>Delivered</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="close-modal" data-close="bookingModal">×</button>
+
+    <h3 id="bookingTitle">Book a table</h3>
+    <p>Choose your date, time, and number of guests.</p>
+
+    <form class="modal-form" id="bookingForm">
+      <input type="text" placeholder="Full name" required>
+      <input type="email" placeholder="Email address" required>
+      <input type="date" required>
+
+      <select required>
+        <option value="">Select time</option>
+        <option>18:00</option>
+        <option>19:00</option>
+        <option>20:00</option>
+        <option>21:00</option>
+      </select>
+
+      <select required>
+        <option value="">Guests</option>
+        <option>2 guests</option>
+        <option>3 guests</option>
+        <option>4 guests</option>
+      </select>
+
+      <button type="submit">Confirm reservation</button>
+    </form>
+  </div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal-overlay" id="detailsModal">
+  <div class="modal wide-modal">
+    <button class="close-modal" data-close="detailsModal">×</button>
+    <div id="detailsContent"></div>
+  </div>
+</div>
+
   <!-- LOGIN / SIGNUP -->
   <div class="modal-overlay" id="authModal">
 
@@ -431,7 +513,7 @@
   window.firebaseLogout = signOut;
 </script>
 
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=21"></script>
 
 </body>
 </html>
